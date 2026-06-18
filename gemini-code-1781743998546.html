@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Cloud Frameworks — Simplified Study Guide</title>
+<style>
+:root {
+  --waf-color: #00F2FE;
+  --caf-color: #00FF87;
+  --tool-color: #FFB347;
+  --bg: #0F0F1A;
+  --surface: #1A1A2E;
+  --surface2: #22223A;
+  --text: #E8E8F0;
+  --muted: #9595B0;
+  --accent: #00F2FE;
+  --success: #4CAF50;
+  --danger: #EF5350;
+  --border: #2A2A42;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+/* Progress Bar */
+#progress-wrap {
+  position: fixed; top: 0; left: 0; width: 100%; height: 4px;
+  background: var(--border); z-index: 1000;
+}
+#progress-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--waf-color), var(--caf-color), var(--tool-color));
+  transition: width 0.3s;
+}
+/* Nav */
+nav {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 14px 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 999;
+  background: rgba(15,15,26,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+nav a {
+  color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 500;
+  padding: 6px 12px; border-radius: 20px; transition: all 0.2s; white-space: nowrap;
+}
+nav a:hover, nav a:active, nav a:focus { color: #fff; background: var(--surface2); }
+/* Container */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+section { padding: 64px 0; border-bottom: 1px solid var(--border); }
+section:last-of-type { border-bottom: none; }
+/* Hero */
+.hero {
+  text-align: center; padding: 100px 24px 80px;
+  background: radial-gradient(ellipse at 50% 20%, rgba(0,242,254,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(0,255,135,0.10) 0%, transparent 50%);
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
+  pointer-events: none;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
+  background: linear-gradient(135deg, var(--waf-color), var(--caf-color), var(--tool-color));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 12px;
+}
+.hero p { font-size: 1.15rem; color: var(--muted); max-width: 700px; margin: 0 auto 32px; }
+.hero-icons { font-size: 2.5rem; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.hero-icons span { transition: transform 0.3s; cursor: default; }
+.hero-icons span:hover { transform: scale(1.25) rotate(5deg); }
+/* Section Headers */
+h2 {
+  font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--caf-color));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+h3 { font-size: 1.25rem; font-weight: 650; margin-bottom: 12px; }
+.subtitle { text-align: center; color: var(--muted); margin-bottom: 40px; font-size: 0.95rem; }
+
+/* Animated Diagram / Topology Matrix Panel */
+.topology-card {
+  background: var(--surface); border-radius: var(--radius); padding: 24px;
+  margin-bottom: 40px; border: 1px solid var(--border);
+}
+.topology-container {
+  width: 100%; overflow-x: auto; background: #0b0b14;
+  border-radius: 8px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Decision Tree */
+.tree-container {
+  background: var(--surface); border-radius: var(--radius); padding: 32px;
+  border: 1px solid var(--border);
+}
+.tree-root { text-align: center; margin-bottom: 20px; }
+.tree-root .root-node {
+  display: inline-block; background: var(--surface2); color: var(--accent);
+  padding: 14px 28px; border-radius: 30px; font-weight: 700; font-size: 1rem;
+  border: 2px solid var(--accent); cursor: default;
+}
+.tree-branches { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.tree-branch {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 14px 18px; cursor: pointer; transition: all 0.2s; flex: 0 1 200px;
+  text-align: center; font-weight: 600; font-size: 0.9rem; min-width: 180px;
+}
+.tree-branch:hover, .tree-branch:focus { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.tree-branch.active { border-color: var(--accent); background: rgba(0, 242, 254, 0.1); }
+.tree-answer {
+  display: none; margin-top: 24px; padding: 24px; background: var(--surface2);
+  border-radius: var(--radius-sm); border-left: 4px solid var(--accent);
+}
+.tree-answer.show { display: block; animation: fadeSlide 0.3s ease; }
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Cards Grid */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.card {
+  background: var(--surface); border-radius: var(--radius); padding: 24px;
+  border: 1px solid var(--border); transition: all 0.25s; position: relative; overflow: hidden;
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+}
+.card.waf::before { background: var(--waf-color); }
+.card.caf::before { background: var(--caf-color); }
+.card.tool::before { background: var(--tool-color); }
+
+.card .icon { font-size: 2rem; margin-bottom: 4px; display: inline-block; }
+.card .name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; display: inline-block; vertical-align: top; margin-top: 6px; margin-left: 8px;}
+.card .badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.card .badge {
+  font-size: 0.72rem; padding: 3px 10px; border-radius: 12px; font-weight: 600;
+  background: rgba(255,255,255,0.08); color: var(--muted); text-transform: uppercase;
+}
+.card .trigger-words { font-size: 0.8rem; color: var(--accent); font-weight: 600; margin: 8px 0; }
+.card .use-this { font-size: 0.85rem; margin: 6px 0; color: var(--success); }
+.card .dont-confuse { font-size: 0.82rem; margin: 6px 0; color: var(--danger); }
+
+/* Accordion Tables */
+.concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.concept-card {
+  background: var(--surface); border-radius: var(--radius); padding: 24px;
+  border: 1px solid var(--border);
+}
+.concept-card h3 { color: var(--accent); }
+.concept-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.88rem; }
+.concept-table th, .concept-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.concept-table th { color: var(--accent); font-weight: 650; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Comparison Table */
+.comp-table-wrap { overflow-x: auto; }
+.comp-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 700px; }
+.comp-table th {
+  background: var(--surface2); padding: 14px 12px; text-align: left; font-weight: 700;
+  color: var(--accent); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px;
+  position: sticky; top: 0;
+}
+.comp-table td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.comp-table tr:hover td { background: rgba(255,255,255,0.02); }
+.comp-table .cat-chip {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700;
+}
+.cat-waf { background: rgba(0, 242, 254, 0.2); color: var(--waf-color); }
+.cat-caf { background: rgba(0, 255, 135, 0.2); color: var(--caf-color); }
+.cat-tool { background: rgba(255, 179, 71, 0.2); color: var(--tool-color); }
+
+/* Memory / Flashcard Section */
+.flashcard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.flashcard { perspective: 600px; height: 180px; cursor: pointer; }
+.flashcard-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s; }
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back {
+  position: absolute; inset: 0; border-radius: var(--radius-sm);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: 16px; font-weight: 700; backface-visibility: hidden;
+}
+.flashcard-front { background: var(--surface); border: 1px solid var(--border); font-size: 1rem; color: var(--text); }
+.flashcard-front span { font-size: 1.8rem; margin-bottom: 6px; }
+.flashcard-back {
+  background: linear-gradient(135deg, var(--surface2), var(--surface));
+  border: 2px solid var(--accent); transform: rotateY(180deg);
+  font-size: 0.9rem; color: var(--accent);
+}
+
+/* Scenarios */
+.scenario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.scenario-card {
+  background: var(--surface); border-radius: var(--radius-sm); padding: 20px;
+  border: 1px solid var(--border); transition: border-color 0.3s;
+}
+.scenario-card p { margin-bottom: 12px; font-size: 0.92rem; }
+.scenario-card select {
+  width: 100%; padding: 10px; border-radius: 8px; background: var(--surface2);
+  color: var(--text); border: 1px solid var(--border); font-size: 0.85rem; font-family: inherit; outline: none;
+}
+.scenario-card select:focus { border-color: var(--accent); }
+.scenario-card .feedback { margin-top: 10px; font-size: 0.85rem; font-weight: 600; min-height: 20px; }
+.scenario-card .feedback.correct { color: var(--success); }
+.scenario-card .feedback.wrong { color: var(--danger); }
+.scenario-card.correct-border { border-color: var(--success); }
+.scenario-card.wrong-border { border-color: var(--danger); }
+
+/* Quiz */
+.quiz-container { max-width: 700px; margin: 0 auto; }
+.quiz-q { background: var(--surface); border-radius: var(--radius); padding: 24px; border: 1px solid var(--border); margin-bottom: 16px; }
+.quiz-q .q-num { color: var(--accent); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 6px; }
+.quiz-q .q-text { font-weight: 600; margin-bottom: 14px; }
+.quiz-q label { display: block; padding: 10px 14px; margin: 4px 0; border-radius: 8px; cursor: pointer; transition: background 0.15s; font-size: 0.9rem; }
+.quiz-q label:hover { background: var(--surface2); }
+.quiz-q input[type="radio"] { margin-right: 10px; accent-color: var(--accent); }
+.quiz-q .explain { display: none; margin-top: 10px; padding: 12px; background: var(--surface2); border-radius: 8px; font-size: 0.85rem; color: var(--accent); }
+.quiz-q .explain.show { display: block; }
+
+.btn { display: inline-block; padding: 12px 28px; border-radius: 30px; border: none; cursor: pointer; font-weight: 700; font-size: 0.95rem; font-family: inherit; transition: all 0.2s; }
+.btn-primary { background: linear-gradient(135deg, var(--waf-color), #4FACFE); color: #fff; box-shadow: 0 4px 16px rgba(0, 242, 254, 0.25); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0, 242, 254, 0.4); }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-row { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+.score-display { text-align: center; font-size: 1.6rem; font-weight: 800; padding: 20px; border-radius: var(--radius); background: var(--surface); margin-bottom: 24px; display: none; }
+
+/* Cheat Sheet */
+.cheat-sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.cheat-item {
+  background: var(--surface); border-radius: var(--radius-sm); padding: 16px 18px;
+  border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; transition: all 0.2s;
+}
+.cheat-item:hover { border-color: var(--accent); transform: translateX(4px); }
+.cheat-item .cs-emoji { font-size: 1.6rem; flex-shrink: 0; }
+.cheat-item .cs-arrow { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+.cheat-item .cs-svc { font-weight: 700; font-size: 0.9rem; }
+
+/* Footer */
+footer { text-align: center; padding: 40px 0; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+@media (max-width: 640px) {
+  nav { gap: 6px; padding: 10px; }
+  nav a { font-size: 0.73rem; padding: 5px 10px; }
+  .card-grid, .flashcard-grid { grid-template-columns: 1fr; }
+  .tree-branches { flex-direction: column; }
+  .hero { padding: 60px 16px 50px; }
+  section { padding: 40px 0; }
+  .comp-table { font-size: 0.75rem; }
+}
+
+/* Specific SVG Animation Classes */
+@keyframes flow-right {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes flow-left {
+  from { stroke-dashoffset: -24; }
+  to { stroke-dashoffset: 0; }
+}
+.flow-line-right {
+  stroke-dasharray: 6 6;
+  animation: flow-right 1s linear infinite;
+}
+.flow-line-left {
+  stroke-dasharray: 6 6;
+  animation: flow-left 1s linear infinite;
+}
+@keyframes pulse-glow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(0, 242, 254, 0.4)); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.8)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(0, 242, 254, 0.4)); }
+}
+.pulse-node {
+  transform-origin: center;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+</style>
+</head>
+<body>
+
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<nav>
+  <a href="#hero">🏠 Home</a>
+  <a href="#tree">🌳 Decision Tree</a>
+  <a href="#cards">🃏 Framework Cards</a>
+  <a href="#concepts">📖 Concepts</a>
+  <a href="#compare">📊 Compare</a>
+  <a href="#memory">🧠 Memory</a>
+  <a href="#scenarios">🎯 Scenarios</a>
+  <a href="#quiz">📝 Quiz</a>
+  <a href="#cheatsheet">📋 Cheat Sheet</a>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero" id="hero">
+  <div class="hero-icons">
+    <span>🏗️</span><span>🛡️</span><span>📈</span><span>💰</span><span>🍃</span>
+  </div>
+  <h1>AWS Cloud Frameworks Made Simple</h1>
+  <p>Your focused guide to the exact framework pillars and adoption benefits required for the CLF-C02 exam. No fluff, just the official facts[cite: 2].</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:0.82rem;color:var(--muted)">
+    <span style="color:var(--waf-color)">🔵 Well-Architected Framework (WAF)</span>
+    <span style="color:var(--caf-color)">🟢 Cloud Adoption Framework (CAF)</span>
+  </div>
+</section>
+
+<!-- ==================== ANIMATED TOPOLOGY DIAGRAM ==================== -->
+<div class="container" style="margin-top: 40px;">
+  <div class="topology-card">
+    <h3 style="color: #FFF; margin-bottom: 6px;">🗺️ The Cloud Frameworks Mind Map</h3>
+    <p class="subtitle" style="text-align: left; margin-bottom: 20px;">Watch how adoption strategies (CAF) and architectural design pillars (WAF) connect to the AWS Cloud[cite: 2].</p>
+    <div class="topology-container">
+      <svg viewBox="0 0 900 350" width="100%" height="100%" style="display: block; min-width: 800px;">
+        
+        <!-- Central Node: AWS Cloud -->
+        <g class="pulse-node" transform="translate(450, 175)">
+          <circle cx="0" cy="0" r="45" fill="#1A1A2E" stroke="#E8E8F0" stroke-width="3"/>
+          <text x="0" y="5" fill="#FFF" font-size="14" font-weight="bold" text-anchor="middle">AWS</text>
+          <text x="0" y="20" fill="#E8E8F0" font-size="10" text-anchor="middle">CLOUD</text>
+        </g>
+
+        <!-- Left Framework: CAF -->
+        <rect x="20" y="40" width="300" height="270" rx="8" fill="none" stroke="#00FF87" stroke-width="1.5"/>
+        <text x="170" y="65" fill="#00FF87" font-size="14" font-weight="bold" text-anchor="middle">AWS Cloud Adoption Framework (CAF)</text>
+        
+        <!-- Right Framework: WAF -->
+        <rect x="580" y="40" width="300" height="270" rx="8" fill="none" stroke="#00F2FE" stroke-width="1.5"/>
+        <text x="730" y="65" fill="#00F2FE" font-size="14" font-weight="bold" text-anchor="middle">AWS Well-Architected Framework</text>
+
+        <!-- Animated Connecting Lines -->
+        <path class="flow-line-left" d="M 405 175 L 320 175" stroke="#00FF87" stroke-width="3" fill="none"/>
+        <path class="flow-line-right" d="M 495 175 L 580 175" stroke="#00F2FE" stroke-width="3" fill="none"/>
+
+        <!-- CAF Nodes (4 Benefits) -->
+        <rect x="60" y="90" width="220" height="35" rx="4" fill="#1A1A2E" stroke="rgba(0,255,135,0.4)"/>
+        <text x="170" y="113" fill="#FFF" font-size="12" text-anchor="middle">🛡️ Reduced Business Risk</text>
+
+        <rect x="60" y="140" width="220" height="35" rx="4" fill="#1A1A2E" stroke="rgba(0,255,135,0.4)"/>
+        <text x="170" y="163" fill="#FFF" font-size="12" text-anchor="middle">🍃 Improved ESG Performance</text>
+
+        <rect x="60" y="190" width="220" height="35" rx="4" fill="#1A1A2E" stroke="rgba(0,255,135,0.4)"/>
+        <text x="170" y="213" fill="#FFF" font-size="12" text-anchor="middle">📈 Increased Revenue</text>
+
+        <rect x="60" y="240" width="220" height="35" rx="4" fill="#1A1A2E" stroke="rgba(0,255,135,0.4)"/>
+        <text x="170" y="263" fill="#FFF" font-size="12" text-anchor="middle">⚙️ Increased Operational Efficiency</text>
+
+        <!-- WAF Nodes (6 Pillars) -->
+        <rect x="620" y="90" width="220" height="30" rx="4" fill="#1A1A2E" stroke="rgba(0,242,254,0.4)"/>
+        <text x="730" y="110" fill="#FFF" font-size="12" text-anchor="middle">🛠️ Operational Excellence</text>
+
+        <rect x="620" y="130" width="220" height="30" rx="4" fill="#1A1A2E" stroke="rgba(0,242,254,0.4)"/>
+        <text x="730" y="150" fill="#FFF" font-size="12" text-anchor="middle">🔒 Security</text>
+
+        <rect x="620" y="170" width="220" height="30" rx="4" fill="#1A1A2E" stroke="rgba(0,242,254,0.4)"/>
+        <text x="730" y="190" fill="#FFF" font-size="12" text-anchor="middle">⚓ Reliability</text>
+
+        <rect x="620" y="210" width="220" height="30" rx="4" fill="#1A1A2E" stroke="rgba(0,242,254,0.4)"/>
+        <text x="730" y="230" fill="#FFF" font-size="12" text-anchor="middle">⚡ Performance Efficiency</text>
+
+        <rect x="620" y="250" width="220" height="30" rx="4" fill="#1A1A2E" stroke="rgba(0,242,254,0.4)"/>
+        <text x="730" y="270" fill="#FFF" font-size="12" text-anchor="middle">💰 Cost Optimization</text>
+
+        <rect x="620" y="290" width="220" height="30" rx="4" fill="#1A1A2E" stroke="rgba(0,242,254,0.4)"/>
+        <text x="730" y="310" fill="#FFF" font-size="12" text-anchor="middle">🌍 Sustainability</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DECISION TREE ==================== -->
+<section id="tree"><div class="container">
+  <h2>🌳 Framework Decision Tree</h2>
+  <p class="subtitle">Quickly identify which pillar or framework benefit matches a simple goal.</p>
+  <div class="tree-container">
+    <div class="tree-root"><div class="root-node">🤔 What is the primary goal of the organization?</div></div>
+    <div class="tree-branches">
+      <button class="tree-branch" data-svc="waf_sec" style="border-top:3px solid var(--waf-color)">🔒 Protecting Data & Systems</button>
+      <button class="tree-branch" data-svc="waf_cost" style="border-top:3px solid var(--waf-color)">💰 Avoiding Unnecessary Spending</button>
+      <button class="tree-branch" data-svc="caf_esg" style="border-top:3px solid var(--caf-color)">🌍 Improving ESG Metrics</button>
+      <button class="tree-branch" data-svc="waf_sus" style="border-top:3px solid var(--waf-color)">🍃 Reducing Environmental Impact</button>
+      <button class="tree-branch" data-svc="waf_rel" style="border-top:3px solid var(--waf-color)">⚓ Recovering from Failures</button>
+      <button class="tree-branch" data-svc="caf_rev" style="border-top:3px solid var(--caf-color)">📈 Increasing Business Income</button>
+    </div>
+    <div class="tree-answer" id="treeAnswer"></div>
+  </div>
+</div></section>
+
+<!-- ==================== SERVICE CARDS ==================== -->
+<section id="cards"><div class="container">
+  <h2>🃏 Framework Elements & Pillars</h2>
+  <p class="subtitle">The exact 6 pillars of WAF, 4 benefits of CAF, and 1 tool explicitly mentioned in the exam guide[cite: 2].</p>
+  <div class="card-grid" id="cardGrid"></div>
+</div></section>
+
+<!-- ==================== CONCEPTS ==================== -->
+<section id="concepts"><div class="container">
+  <h2>📖 Key Concepts & Groupings</h2>
+  <p class="subtitle">Understand how these framework pieces are categorized in the exam.</p>
+  <div class="concept-grid">
+    <!-- WAF vs CAF -->
+    <div class="concept-card">
+      <h3>🏛️ WAF vs 🚀 CAF</h3>
+      <table class="concept-table">
+        <tr><th>Well-Architected Framework (WAF)</th><th>Cloud Adoption Framework (CAF)</th></tr>
+        <tr><td>Focuses on <b>design principles</b> for cloud architecture[cite: 2].</td><td>Focuses on <b>strategies</b> for migrating to the AWS Cloud[cite: 2].</td></tr>
+        <tr><td>Contains 6 technical "Pillars"[cite: 2].</td><td>Provides 4 distinct business "Benefits"[cite: 2].</td></tr>
+        <tr><td>Helps you build secure, high-performing infrastructure.</td><td>Helps reduce risk and increase revenue during adoption[cite: 2].</td></tr>
+      </table>
+    </div>
+    <!-- The 6 Pillars -->
+    <div class="concept-card">
+      <h3>🏛️ The 6 WAF Pillars</h3>
+      <table class="concept-table">
+        <tr><th>Pillar Name</th><th>Primary Focus</th></tr>
+        <tr><td><b>Operational Excellence</b></td><td>Running and monitoring systems[cite: 2].</td></tr>
+        <tr><td><b>Security</b></td><td>Protecting information and assets[cite: 2].</td></tr>
+        <tr><td><b>Reliability</b></td><td>Recovering from disruptions automatically[cite: 2].</td></tr>
+        <tr><td><b>Performance Efficiency</b></td><td>Using computing resources efficiently[cite: 2].</td></tr>
+        <tr><td><b>Cost Optimization</b></td><td>Avoiding unnecessary costs[cite: 2].</td></tr>
+        <tr><td><b>Sustainability</b></td><td>Minimizing environmental impacts[cite: 2].</td></tr>
+      </table>
+    </div>
+    <!-- The 4 CAF Benefits -->
+    <div class="concept-card">
+      <h3>🚀 The 4 CAF Benefits</h3>
+      <table class="concept-table">
+        <tr><th>Benefit Category</th><th>Business Outcome</th></tr>
+        <tr><td><b>Reduced business risk</b></td><td>Safer migrations and operations[cite: 2].</td></tr>
+        <tr><td><b>Improved ESG</b></td><td>Better Environmental, Social, and Governance metrics[cite: 2].</td></tr>
+        <tr><td><b>Increased revenue</b></td><td>Creating new products or reaching markets faster[cite: 2].</td></tr>
+        <tr><td><b>Increased efficiency</b></td><td>Streamlining processes and operational overhead[cite: 2].</td></tr>
+      </table>
+    </div>
+  </div>
+</div></section>
+
+<!-- ==================== COMPARISON TABLE ==================== -->
+<section id="compare"><div class="container">
+  <h2>📊 Master Comparison Table</h2>
+  <p class="subtitle">A complete reference of every framework element from the exam guide[cite: 2].</p>
+  <div class="comp-table-wrap">
+    <table class="comp-table" id="compTable"></table>
+  </div>
+</div></section>
+
+<!-- ==================== MEMORY / FLASHCARDS ==================== -->
+<section id="memory"><div class="container">
+  <h2>🧠 Active Recall Memory Blocks</h2>
+  <p class="subtitle">Click any card to flip it and reveal the framework mapping instantly.</p>
+  <div class="flashcard-grid" id="flashcardGrid"></div>
+</div></section>
+
+<!-- ==================== SCENARIO PRACTICE ==================== -->
+<section id="scenarios"><div class="container">
+  <h2>🎯 Scenario Practice</h2>
+  <p class="subtitle">Match the simple scenario to the correct framework element.</p>
+  <div class="scenario-grid" id="scenarioGrid"></div>
+  <div style="text-align:center;margin-top:16px;font-size:0.9rem;color:var(--muted)">
+    Score: <span id="scenarioScore" style="color:var(--accent);font-weight:700;">0</span> / 10
+  </div>
+</div></section>
+
+<!-- ==================== QUIZ ==================== -->
+<section id="quiz"><div class="container">
+  <h2>📝 Frameworks Quiz</h2>
+  <p class="subtitle">20 questions strictly based on the WAF Pillars and CAF Benefits[cite: 2].</p>
+  <div class="quiz-container" id="quizContainer"></div>
+  <div class="score-display" id="quizScore"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="quizSubmit">Submit Answers</button>
+    <button class="btn btn-outline" id="quizRetry" style="display:none">🔄 Retry Quiz</button>
+  </div>
+</div></section>
+
+<!-- ==================== CHEAT SHEET ==================== -->
+<section id="cheatsheet"><div class="container">
+  <h2>📋 Quick Cheat Sheet</h2>
+  <p class="subtitle">The fastest way to memorize what belongs where.</p>
+  <div class="cheat-sheet" id="cheatSheet"></div>
+</div></section>
+
+<footer>
+  <p>AWS Certified Cloud Practitioner CLF-C02 · Simplified Frameworks Guide · 2026 Edition</p>
+</footer>
+
+<script>
+// ===== DATA STRUCTURES =====
+const services = {
+  waf_op: {
+    name: 'Operational Excellence', icon: '🛠️', cls: 'waf', cat: 'WAF Pillar',
+    explain: 'One of the six pillars of the AWS Well-Architected Framework[cite: 2]. It focuses on running and monitoring systems to deliver business value and continually improving processes and procedures.',
+    triggers: '"run and monitor systems", "improve processes", "Well-Architected Framework pillar"',
+    useThis: 'You are looking for the design principle that handles monitoring and process improvements.',
+    noConfuse: 'Do not confuse with Performance Efficiency. Operational Excellence is about processes; Performance is about IT resource speed.'
+  },
+  waf_sec: {
+    name: 'Security', icon: '🔒', cls: 'waf', cat: 'WAF Pillar',
+    explain: 'A pillar of the AWS Well-Architected Framework[cite: 2]. It focuses on protecting information, systems, and assets while delivering business value through risk assessments and mitigation strategies.',
+    triggers: '"protecting information", "risk mitigation", "Well-Architected Framework pillar"',
+    useThis: 'You need to identify the framework design principle focused on protecting data.',
+    noConfuse: 'Do not confuse with the AWS shared responsibility model[cite: 2]. Security is a pillar; the shared model defines who does what.'
+  },
+  waf_rel: {
+    name: 'Reliability', icon: '⚓', cls: 'waf', cat: 'WAF Pillar',
+    explain: 'A pillar of the AWS Well-Architected Framework[cite: 2]. It ensures a workload performs its intended function correctly and consistently when it\'s expected to, including the ability to recover from failures.',
+    triggers: '"recover from failures", "performs consistently", "Well-Architected Framework pillar"',
+    useThis: 'The scenario mentions ensuring systems stay up and recover automatically from disruptions.',
+    noConfuse: 'Do not confuse with Operational Excellence. Reliability is about staying online; Operational Excellence is about how you manage it.'
+  },
+  waf_perf: {
+    name: 'Performance Efficiency', icon: '⚡', cls: 'waf', cat: 'WAF Pillar',
+    explain: 'A pillar of the AWS Well-Architected Framework[cite: 2]. It focuses on using IT and computing resources efficiently to meet system requirements, and maintaining that efficiency as demand changes.',
+    triggers: '"using resources efficiently", "maintaining efficiency as demand changes", "Well-Architected Framework pillar"',
+    useThis: 'You want to select the right resource types and sizes based on workload requirements.',
+    noConfuse: 'Do not confuse with Cost Optimization. Performance is about speed and capability; Cost is purely about spending less.'
+  },
+  waf_cost: {
+    name: 'Cost Optimization', icon: '💰', cls: 'waf', cat: 'WAF Pillar',
+    explain: 'A pillar of the AWS Well-Architected Framework[cite: 2]. It focuses on avoiding unnecessary costs and ensuring that cloud spending delivers maximum business value.',
+    triggers: '"avoiding unnecessary costs", "delivering business value at lowest price", "Well-Architected Framework pillar"',
+    useThis: 'The goal is to stop paying for idle resources or to pick more cost-effective pricing models.',
+    noConfuse: 'Do not confuse with Sustainability. Cost Optimization saves money; Sustainability saves the environment.'
+  },
+  waf_sus: {
+    name: 'Sustainability', icon: '🌍', cls: 'waf', cat: 'WAF Pillar',
+    explain: 'A pillar of the AWS Well-Architected Framework[cite: 2]. It focuses on minimizing the environmental impacts of running cloud workloads.',
+    triggers: '"environmental impacts", "sustainability", "Well-Architected Framework pillar"',
+    useThis: 'The organization wants to reduce its carbon footprint and environmental impact.',
+    noConfuse: 'Do not confuse with improved ESG performance. Sustainability is a technical WAF Pillar; Improved ESG is a business CAF benefit[cite: 2].'
+  },
+  caf_risk: {
+    name: 'Reduced Business Risk', icon: '🛡️', cls: 'caf', cat: 'CAF Benefit',
+    explain: 'A core benefit of adopting the AWS Cloud Adoption Framework (AWS CAF)[cite: 2]. It refers to making cloud migrations safer and more compliant.',
+    triggers: '"Cloud Adoption Framework benefit", "reduced business risk", "migration strategies"',
+    useThis: 'You are identifying the organizational benefits of following a cloud migration strategy.',
+    noConfuse: 'Do not confuse with the Security Pillar (WAF). Risk reduction here applies to the overall business adoption strategy, not just technical security[cite: 2].'
+  },
+  caf_esg: {
+    name: 'Improved ESG Performance', icon: '🍃', cls: 'caf', cat: 'CAF Benefit',
+    explain: 'A recognized benefit of the AWS Cloud Adoption Framework (AWS CAF)[cite: 2]. It stands for improved Environmental, Social, and Governance performance.',
+    triggers: '"Cloud Adoption Framework benefit", "improved environmental, social, and governance", "ESG performance"',
+    useThis: 'An organization is looking at the high-level business advantages of cloud migration regarding corporate responsibility.',
+    noConfuse: 'Do not confuse with the Sustainability Pillar (WAF). ESG is the broad business benefit (CAF); Sustainability is the specific technical architecture pillar (WAF)[cite: 2].'
+  },
+  caf_rev: {
+    name: 'Increased Revenue', icon: '📈', cls: 'caf', cat: 'CAF Benefit',
+    explain: 'A financial benefit of utilizing the AWS Cloud Adoption Framework (AWS CAF)[cite: 2], achieved by accelerating product delivery to market.',
+    triggers: '"Cloud Adoption Framework benefit", "increased revenue", "migration strategies"',
+    useThis: 'A business uses cloud adoption to launch products faster, leading to higher earnings.',
+    noConfuse: 'Do not confuse with Cost Optimization (WAF). Increased Revenue is about making more money; Cost Optimization is about spending less.'
+  },
+  caf_eff: {
+    name: 'Increased Operational Efficiency', icon: '⚙️', cls: 'caf', cat: 'CAF Benefit',
+    explain: 'An organizational benefit of the AWS Cloud Adoption Framework (AWS CAF)[cite: 2], resulting from streamlined business processes and reduced overhead.',
+    triggers: '"Cloud Adoption Framework benefit", "increased operational efficiency", "migration strategies"',
+    useThis: 'The business as a whole operates smoother and faster after adopting cloud strategies.',
+    noConfuse: 'Do not confuse with Operational Excellence (WAF). Efficiency here is a business outcome (CAF); Excellence is a technical design principle (WAF)[cite: 2].'
+  },
+  wat: {
+    name: 'AWS Well-Architected Tool', icon: '🔧', cls: 'tool', cat: 'Management & Governance',
+    explain: 'A service listed under Management and Governance[cite: 2] that helps you review the state of your workloads and compares them to the latest AWS architectural best practices.',
+    triggers: '"review workloads", "compare to architectural best practices", "Management and Governance"',
+    useThis: 'You need a specific AWS service tool to audit your architecture against the 6 WAF pillars.',
+    noConfuse: 'Do not confuse with the Framework itself. The Framework is the set of ideas; the Tool is the actual software service you click on in AWS.'
+  }
+};
+
+const treeAnswers = {
+  waf_sec: { title:'🔒 Security (WAF Pillar)', text:'Protects your data and systems. This is one of the 6 pillars of the AWS Well-Architected Framework[cite: 2].' },
+  waf_cost: { title:'💰 Cost Optimization (WAF Pillar)', text:'Helps you avoid unnecessary spending. This is one of the 6 pillars of the AWS Well-Architected Framework[cite: 2].' },
+  caf_esg: { title:'🌍 Improved ESG Performance (CAF Benefit)', text:'Addresses Environmental, Social, and Governance goals. This is a benefit of the AWS Cloud Adoption Framework[cite: 2].' },
+  waf_sus: { title:'🍃 Sustainability (WAF Pillar)', text:'Minimizes the environmental impact of your technical architecture. This is a pillar of the Well-Architected Framework[cite: 2].' },
+  waf_rel: { title:'⚓ Reliability (WAF Pillar)', text:'Ensures systems recover from failures automatically. This is a pillar of the Well-Architected Framework[cite: 2].' },
+  caf_rev: { title:'📈 Increased Revenue (CAF Benefit)', text:'A high-level business outcome of cloud migration. This is a benefit of the AWS Cloud Adoption Framework[cite: 2].' }
+};
+
+// ===== DECISION TREE WORKFLOW =====
+document.querySelectorAll('.tree-branch').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tree-branch').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const ans = treeAnswers[btn.dataset.svc];
+    const div = document.getElementById('treeAnswer');
+    div.innerHTML = `<strong style="font-size:1.1rem; color:var(--accent);">${ans.title}</strong><p style="margin-top:8px;">${ans.text}</p>`;
+    div.classList.add('show');
+    markProgress('tree');
+  });
+});
+
+// ===== CARDS RENDER LOOP =====
+const cardGrid = document.getElementById('cardGrid');
+Object.entries(services).forEach(([key, s]) => {
+  const div = document.createElement('div');
+  div.className = `card ${s.cls}`;
+  div.innerHTML = `
+    <div class="icon">${s.icon}</div>
+    <div class="name">${s.name}</div>
+    <div class="badge-row">
+      <span class="badge">${s.cat}</span>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin:8px 0;">${s.explain}</p>
+    <p class="trigger-words">🔍 Exam Triggers: ${s.triggers}</p>
+    <p class="use-this">✅ Use this when: ${s.useThis}</p>
+    <p class="dont-confuse">⚠️ ${s.noConfuse}</p>
+  `;
+  cardGrid.appendChild(div);
+  div.addEventListener('click', () => markProgress('cards'));
+});
+
+// ===== MATRIX COMPARISON TABLE BUILDER =====
+const compData = [
+  ['Operational Excellence','WAF Pillar','Running and monitoring systems[cite: 2]','Operations, processes, improvements','Performance Efficiency'],
+  ['Security','WAF Pillar','Protecting information and assets[cite: 2]','Risk mitigation, protection','AWS Shared Responsibility Model'],
+  ['Reliability','WAF Pillar','Recovering from failures[cite: 2]','Consistent performance, disruption recovery','Operational Excellence'],
+  ['Performance Efficiency','WAF Pillar','Using IT resources efficiently[cite: 2]','Resource sizing, speed, demand','Cost Optimization'],
+  ['Cost Optimization','WAF Pillar','Avoiding unnecessary costs[cite: 2]','Lowest price, business value','Sustainability'],
+  ['Sustainability','WAF Pillar','Minimizing environmental impacts[cite: 2]','Cloud workload environment impact','Improved ESG Performance (CAF)'],
+  ['Reduced Business Risk','CAF Benefit','Safer cloud migrations[cite: 2]','Migration strategy, risk reduction','Security Pillar (WAF)'],
+  ['Improved ESG Performance','CAF Benefit','Environmental, Social, Governance[cite: 2]','ESG, business outcomes','Sustainability Pillar (WAF)'],
+  ['Increased Revenue','CAF Benefit','Financial business growth[cite: 2]','Revenue, product delivery','Cost Optimization Pillar (WAF)'],
+  ['Increased Operational Efficiency','CAF Benefit','Streamlined business processes[cite: 2]','Efficiency, business overhead','Operational Excellence Pillar (WAF)'],
+  ['AWS Well-Architected Tool','AWS Service','Reviewing architecture[cite: 2]','Compare to best practices, review workloads','The Framework itself']
+];
+const compTable = document.getElementById('compTable');
+compTable.innerHTML = `<thead><tr><th>Element</th><th>Category</th><th>Primary Focus</th><th>Key Exam Triggers</th><th>Avoid Confusing With</th></tr></thead><tbody>${
+  compData.map(r => {
+    let chipStyle = r[1] === 'WAF Pillar' ? 'cat-waf' : r[1] === 'CAF Benefit' ? 'cat-caf' : 'cat-tool';
+    return `<tr><td><b>${r[0]}</b></td><td><span class="cat-chip ${chipStyle}">${r[1]}</span></td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`;
+  }).join('')
+}</tbody>`;
+
+// ===== ACTIVE RECALL FLASHCARDS =====
+const flashcardData = [
+  ['🛠️ Operational Excellence', 'WAF Pillar: Running & monitoring systems[cite: 2]', 'waf_op'],
+  ['🔒 Security', 'WAF Pillar: Protecting information[cite: 2]', 'waf_sec'],
+  ['⚓ Reliability', 'WAF Pillar: Recovering from failures[cite: 2]', 'waf_rel'],
+  ['⚡ Performance Efficiency', 'WAF Pillar: Using resources efficiently[cite: 2]', 'waf_perf'],
+  ['💰 Cost Optimization', 'WAF Pillar: Avoiding unnecessary costs[cite: 2]', 'waf_cost'],
+  ['🌍 Sustainability', 'WAF Pillar: Minimizing environmental impacts[cite: 2]', 'waf_sus'],
+  ['🛡️ Reduced Business Risk', 'CAF Benefit: Safer migrations[cite: 2]', 'caf_risk'],
+  ['🍃 Improved ESG Performance', 'CAF Benefit: Better Environmental, Social, Governance[cite: 2]', 'caf_esg'],
+  ['📈 Increased Revenue', 'CAF Benefit: Financial growth from migration[cite: 2]', 'caf_rev'],
+  ['⚙️ Increased Operational Efficiency', 'CAF Benefit: Streamlined business overhead[cite: 2]', 'caf_eff'],
+  ['🔧 AWS Well-Architected Tool', 'Service: Reviews workloads against best practices[cite: 2]', 'wat']
+];
+const fgrid = document.getElementById('flashcardGrid');
+flashcardData.forEach(([front, back, key]) => {
+  const div = document.createElement('div');
+  div.className = 'flashcard';
+  div.innerHTML = `
+    <div class="flashcard-inner">
+      <div class="flashcard-front">
+        <span style="font-size:2rem; margin-bottom:8px;">${front.split(' ')[0]}</span>
+        <p>${front.split(' ').slice(1).join(' ')}</p>
+      </div>
+      <div class="flashcard-back">
+        ${back}
+      </div>
+    </div>`;
+  div.addEventListener('click', () => { div.classList.toggle('flipped'); markProgress('memory'); });
+  fgrid.appendChild(div);
+});
+
+// ===== INTERACTIVE PRACTICE SCENARIOS =====
+const scenarios = [
+  { q:'A company wants to ensure their architecture can automatically recover from a sudden instance failure. Which WAF pillar does this represent?[cite: 2]', a:'Reliability', opts:['Reliability','Security','Cost Optimization','Operational Excellence'] },
+  { q:'A business highlights "Improved ESG Performance" as a reason to move to the cloud. What framework is this a benefit of?[cite: 2]', a:'Cloud Adoption Framework (CAF)', opts:['Cloud Adoption Framework (CAF)','Well-Architected Framework (WAF)','Shared Responsibility Model','AWS Compliance'] },
+  { q:'An architect is evaluating EC2 instance types to ensure they are using computing resources efficiently to meet system requirements. Which WAF pillar is this?[cite: 2]', a:'Performance Efficiency', opts:['Performance Efficiency','Reliability','Cost Optimization','Sustainability'] },
+  { q:'A CEO mentions that migrating to AWS will result in "Increased Revenue" and "Reduced Business Risk". These are recognized benefits of the:[cite: 2]', a:'Cloud Adoption Framework (CAF)', opts:['Cloud Adoption Framework (CAF)','Well-Architected Framework (WAF)','AWS Well-Architected Tool','AWS Artifact'] },
+  { q:'A developer wants to minimize the environmental impacts of their running cloud workloads. Which WAF pillar focuses on this?[cite: 2]', a:'Sustainability', opts:['Sustainability','Operational Excellence','Cost Optimization','Reliability'] },
+  { q:'A cloud team is focused on avoiding unnecessary costs and finding the lowest price for their workload. Which WAF pillar is this?[cite: 2]', a:'Cost Optimization', opts:['Cost Optimization','Sustainability','Operational Excellence','Performance Efficiency'] },
+  { q:'An administrator needs an AWS service to review their current workloads and compare them to AWS architectural best practices. Which service should they use?[cite: 2]', a:'AWS Well-Architected Tool', opts:['AWS Well-Architected Tool','AWS Trusted Advisor','AWS Config','AWS Artifact'] },
+  { q:'Protecting information, systems, and assets is the primary focus of which WAF pillar?[cite: 2]', a:'Security', opts:['Security','Reliability','Operational Excellence','Cost Optimization'] },
+  { q:'Running and monitoring systems to deliver business value and continually improving processes is the focus of which WAF pillar?[cite: 2]', a:'Operational Excellence', opts:['Operational Excellence','Performance Efficiency','Reliability','Security'] },
+  { q:'"Increased operational efficiency" is listed in the exam guide as a benefit of which framework?[cite: 2]', a:'Cloud Adoption Framework (CAF)', opts:['Cloud Adoption Framework (CAF)','Well-Architected Framework (WAF)','AWS Shared Responsibility Model','AWS Pricing Calculator'] }
+];
+const scenarioGrid = document.getElementById('scenarioGrid');
+let scenarioScore = 0;
+const scenarioStates = new Array(scenarios.length).fill(false);
+scenarios.forEach((sc, i) => {
+  const div = document.createElement('div');
+  div.className = 'scenario-card';
+  div.innerHTML = `
+    <p>🧩 <b>Scenario ${i+1}:</b> ${sc.q}</p>
+    <select data-idx="${i}"><option value="">-- Choose the best answer --</option>${sc.opts.map(o => `<option value="${o}">${o}</option>`).join('')}</select>
+    <div class="feedback" data-idx="${i}"></div>
+  `;
+  scenarioGrid.appendChild(div);
+});
+scenarioGrid.addEventListener('change', (e) => {
+  if (e.target.tagName !== 'SELECT') return;
+  const idx = parseInt(e.target.dataset.idx);
+  const fb = scenarioGrid.querySelector(`.feedback[data-idx="${idx}"]`);
+  const card = e.target.closest('.scenario-card');
+  if (e.target.value === scenarios[idx].a) {
+    fb.textContent = '✅ Correct!';
+    fb.className = 'feedback correct';
+    card.classList.add('correct-border');
+    card.classList.remove('wrong-border');
+    if (!scenarioStates[idx]) { scenarioStates[idx] = true; scenarioScore++; }
+  } else {
+    fb.textContent = `❌ Incorrect. The right answer is "${scenarios[idx].a}".`;
+    fb.className = 'feedback wrong';
+    card.classList.add('wrong-border');
+    card.classList.remove('correct-border');
+    if (scenarioStates[idx]) { scenarioStates[idx] = false; scenarioScore--; }
+  }
+  document.getElementById('scenarioScore').textContent = scenarioScore;
+  markProgress('scenarios');
+});
+
+// ===== COMPREHENSIVE QUIZ =====
+const quizQuestions = [
+  { q:'Which of the following is a pillar of the AWS Well-Architected Framework?[cite: 2]', opts:['Increased Revenue','Sustainability','Reduced Business Risk','Improved ESG Performance'], a:1, exp:'Sustainability is one of the 6 pillars of the Well-Architected Framework[cite: 2].' },
+  { q:'Which of the following is a benefit of the AWS Cloud Adoption Framework (AWS CAF)?[cite: 2]', opts:['Operational Excellence','Reliability','Reduced Business Risk','Performance Efficiency'], a:2, exp:'Reduced business risk is explicitly listed as a benefit of AWS CAF[cite: 2].' },
+  { q:'What is the primary focus of the Reliability pillar in the AWS Well-Architected Framework?[cite: 2]', opts:['Avoiding unnecessary costs','Using computing resources efficiently','Recovering from failures','Protecting information and assets'], a:2, exp:'Reliability focuses on a workload performing its intended function correctly and recovering from failures[cite: 2].' },
+  { q:'Improved environmental, social, and governance (ESG) performance is a benefit of which framework?[cite: 2]', opts:['AWS Well-Architected Framework','AWS Cloud Adoption Framework (AWS CAF)','AWS Shared Responsibility Model','AWS Compliance Framework'], a:1, exp:'Improved ESG performance is a benefit of the AWS Cloud Adoption Framework[cite: 2].' },
+  { q:'Which pillar of the AWS Well-Architected Framework focuses on running and monitoring systems to deliver business value?[cite: 2]', opts:['Operational Excellence','Performance Efficiency','Security','Cost Optimization'], a:0, exp:'Operational Excellence focuses on running/monitoring systems and improving processes[cite: 2].' },
+  { q:'Which AWS service is used to review workloads and compare them to AWS architectural best practices?[cite: 2]', opts:['AWS Artifact','AWS CloudFormation','AWS Well-Architected Tool','AWS Trusted Advisor'], a:2, exp:'The AWS Well-Architected Tool is a Management and Governance service used to review workloads[cite: 2].' },
+  { q:'Which of the following is NOT one of the six pillars of the AWS Well-Architected Framework?[cite: 2]', opts:['Cost Optimization','Security','Increased Revenue','Sustainability'], a:2, exp:'Increased Revenue is a benefit of the Cloud Adoption Framework (CAF), not a WAF pillar[cite: 2].' },
+  { q:'Using IT and computing resources efficiently to meet system requirements describes which WAF pillar?[cite: 2]', opts:['Reliability','Performance Efficiency','Operational Excellence','Cost Optimization'], a:1, exp:'Performance Efficiency is about using computing resources efficiently[cite: 2].' },
+  { q:'Which of the following lists contains ONLY benefits of the AWS Cloud Adoption Framework (AWS CAF)?[cite: 2]', opts:['Security, Reliability, Cost Optimization','Reduced business risk, Increased revenue, Improved ESG performance','Operational Excellence, Sustainability, Performance Efficiency','Compute, Network, Database'], a:1, exp:'Reduced business risk, increased revenue, and improved ESG performance are CAF benefits[cite: 2].' },
+  { q:'Minimizing the environmental impacts of running cloud workloads is the focus of which WAF pillar?[cite: 2]', opts:['Cost Optimization','Operational Excellence','Sustainability','Reliability'], a:2, exp:'Sustainability is the WAF pillar focused on minimizing environmental impacts[cite: 2].' },
+  { q:'Avoiding unnecessary costs is the definition of which WAF pillar?[cite: 2]', opts:['Cost Optimization','Performance Efficiency','Sustainability','Operational Excellence'], a:0, exp:'Cost Optimization focuses on avoiding unnecessary costs[cite: 2].' },
+  { q:'Protecting information, systems, and assets is the core of which WAF pillar?[cite: 2]', opts:['Reliability','Security','Operational Excellence','Performance Efficiency'], a:1, exp:'Security is the WAF pillar focused on protecting information and systems[cite: 2].' },
+  { q:'A company wants to increase its operational efficiency during a cloud migration. This is a recognized benefit of the:[cite: 2]', opts:['AWS Cloud Adoption Framework (AWS CAF)','AWS Well-Architected Framework (WAF)','AWS Shared Responsibility Model','AWS Pricing Calculator'], a:0, exp:'Increased operational efficiency is a benefit of AWS CAF[cite: 2].' },
+  { q:'If you need to understand the design principles of the AWS Cloud, which framework should you study?[cite: 2]', opts:['AWS Cloud Adoption Framework (AWS CAF)','AWS Well-Architected Framework (WAF)','AWS Shared Responsibility Model','AWS Compliance Framework'], a:1, exp:'Task 1.2 of the exam guide states that design principles are understood via the AWS Well-Architected Framework[cite: 2].' },
+  { q:'If you need to understand the strategies and benefits of migration to the AWS Cloud, which framework should you study?[cite: 2]', opts:['AWS Well-Architected Framework (WAF)','AWS Cloud Adoption Framework (AWS CAF)','AWS Cost Explorer','AWS Well-Architected Tool'], a:1, exp:'Task 1.3 of the exam guide states that migration strategies and benefits align with the AWS Cloud Adoption Framework[cite: 2].' },
+  { q:'According to the exam guide, how many pillars does the AWS Well-Architected Framework have?[cite: 2]', opts:['4','5','6','7'], a:2, exp:'The guide lists 6: operational excellence, security, reliability, performance efficiency, cost optimization, sustainability[cite: 2].' },
+  { q:'Which two items sound similar but belong to different frameworks?[cite: 2]', opts:['Security (WAF) and Reliability (WAF)','Sustainability (WAF) and Improved ESG Performance (CAF)','Cost Optimization (WAF) and Performance Efficiency (WAF)','Reduced Business Risk (CAF) and Increased Revenue (CAF)'], a:1, exp:'Sustainability is a technical WAF Pillar; Improved ESG is a business CAF benefit[cite: 2].' },
+  { q:'The AWS Well-Architected Tool is categorized under which service group in the exam guide?[cite: 2]', opts:['Compute','Security, Identity, and Compliance','Management and Governance','Developer Tools'], a:2, exp:'Appendix A lists the AWS Well-Architected Tool under Management and Governance[cite: 2].' },
+  { q:'Which WAF pillar ensures a workload performs consistently and as expected?[cite: 2]', opts:['Performance Efficiency','Reliability','Security','Operational Excellence'], a:1, exp:'Reliability ensures a workload performs its intended function correctly and consistently[cite: 2].' },
+  { q:'Which of the following is NOT a benefit of the AWS Cloud Adoption Framework (AWS CAF) listed in the exam guide?[cite: 2]', opts:['Increased revenue','Reduced business risk','Improved ESG performance','Elimination of all fixed costs'], a:3, exp:'Elimination of fixed costs is part of cloud economics, but not explicitly listed as one of the 4 CAF benefits in Task 1.3[cite: 2].' }
+];
+
+const quizContainer = document.getElementById('quizContainer');
+quizQuestions.forEach((q, i) => {
+  const div = document.createElement('div');
+  div.className = 'quiz-q';
+  div.innerHTML = `
+    <div class="q-num">Question ${i+1} of 20</div>
+    <div class="q-text">${q.q}</div>
+    ${q.opts.map((o, j) => `<label><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join('')}
+    <div class="explain" id="exp${i}">💡 ${q.exp}</div>
+  `;
+  quizContainer.appendChild(div);
+});
+
+document.getElementById('quizSubmit').addEventListener('click', () => {
+  let correct = 0;
+  quizQuestions.forEach((q, i) => {
+    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+    const expDiv = document.getElementById(`exp${i}`);
+    expDiv.classList.add('show');
+    if (selected && parseInt(selected.value) === q.a) {
+      correct++;
+      selected.parentElement.style.color = 'var(--success)';
+      selected.parentElement.style.fontWeight = '700';
+    }
+    const labels = document.querySelectorAll(`input[name="q${i}"]`);
+    labels[q.a].parentElement.style.background = 'rgba(76,175,80,0.08)';
+    labels[q.a].parentElement.style.borderRadius = '8px';
+  });
+  const pct = Math.round((correct / 20) * 100);
+  const scoreDiv = document.getElementById('quizScore');
+  scoreDiv.style.display = 'block';
+  const emoji = pct >= 90 ? '🏆' : pct >= 70 ? '🎉' : pct >= 50 ? '👍' : '📚';
+  scoreDiv.innerHTML = `${emoji} Score: <span style="color:var(--accent)">${correct}/20</span> (${pct}%)`;
+  document.getElementById('quizRetry').style.display = 'inline-block';
+  document.getElementById('quizSubmit').style.display = 'none';
+  markProgress('quiz');
+  window.scrollTo({ top: scoreDiv.offsetTop - 100, behavior: 'smooth' });
+});
+
+document.getElementById('quizRetry').addEventListener('click', () => {
+  quizQuestions.forEach((q, i) => {
+    document.getElementById(`exp${i}`).classList.remove('show');
+    const labels = document.querySelectorAll(`input[name="q${i}"]`);
+    labels.forEach(l => {
+      l.checked = false;
+      l.parentElement.style.background = '';
+      l.parentElement.style.color = '';
+      l.parentElement.style.fontWeight = '';
+    });
+  });
+  document.getElementById('quizScore').style.display = 'none';
+  document.getElementById('quizRetry').style.display = 'none';
+  document.getElementById('quizSubmit').style.display = 'inline-block';
+  window.scrollTo({ top: document.getElementById('quiz').offsetTop - 80, behavior: 'smooth' });
+});
+
+// ===== CHEAT SHEET =====
+const cheatData = [
+  ['🛠️','Running and monitoring systems[cite: 2]','WAF: Operational Excellence'],
+  ['🔒','Protecting information and assets[cite: 2]','WAF: Security'],
+  ['⚓','Recovering from failures[cite: 2]','WAF: Reliability'],
+  ['⚡','Using IT resources efficiently[cite: 2]','WAF: Performance Efficiency'],
+  ['💰','Avoiding unnecessary costs[cite: 2]','WAF: Cost Optimization'],
+  ['🌍','Minimizing environmental impacts[cite: 2]','WAF: Sustainability'],
+  ['🛡️','Safer cloud migrations[cite: 2]','CAF: Reduced business risk'],
+  ['🍃','Environmental, Social, Governance metrics[cite: 2]','CAF: Improved ESG performance'],
+  ['📈','Financial growth from cloud products[cite: 2]','CAF: Increased revenue'],
+  ['⚙️','Streamlined business processes[cite: 2]','CAF: Increased operational efficiency'],
+  ['🔧','Review workloads against best practices[cite: 2]','AWS Well-Architected Tool']
+];
+document.getElementById('cheatSheet').innerHTML = cheatData.map(([emoji, desc, svc]) => `
+  <div class="cheat-item"><span class="cs-emoji">${emoji}</span><span style="flex:1;font-size:0.88rem;">${desc}</span><span class="cs-arrow">→</span><span class="cs-svc">${svc}</span></div>
+`).join('');
+
+// ===== PROGRESS METRICS =====
+const progressSections = {};
+function markProgress(section) {
+  progressSections[section] = true;
+  const total = ['tree','cards','concepts','compare','memory','scenarios','quiz'];
+  const done = total.filter(s => progressSections[s]).length;
+  const pct = Math.round((done / total.length) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && entry.target.id) {
+      markProgress(entry.target.id);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
